@@ -27,17 +27,20 @@
     color:var(--paper);
     font-family:'Gowun Batang', serif;
     min-height:100vh;
+    display:flex;
+    flex-direction:column;
     -webkit-font-smoothing:antialiased;
   }
   h1,h2,h3,.display{font-family:'Song Myung', serif; letter-spacing:0.5px;}
   .mono{font-family:'Nanum Gothic Coding', monospace;}
   a{color:inherit;}
 
-  #app{max-width:960px;margin:0 auto;padding:28px 18px 80px;}
+  #app{max-width:960px;margin:0 auto;padding:28px 18px 80px;width:100%;flex:1;display:flex;flex-direction:column;}
 
   /* ---------- title screen ---------- */
   #title-screen{
-    min-height:92vh;
+    flex:1;
+    min-height:0;
     display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
     text-align:center;gap:18px;
     animation:fadeIn 1s ease;

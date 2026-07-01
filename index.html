@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>목차</title>
+<title>탈출 이야기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -16,23 +16,111 @@
     --chalk-dim:#9CAC9A;
     --chalk-yellow:#E7D97A;
     --chalk-red:#DE8088;
-    --chalk-red-dim:#8a4a4f;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;height:100%;}
   body{
-    min-height:100vh;
-    background:radial-gradient(ellipse at 50% -10%, #241a10 0%, #0a0704 60%);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    background:#0a0704;
     font-family:'Nanum Gothic', sans-serif;
     color:var(--chalk);
+  }
+
+  /* ── 상단 바 ── */
+  header.topbar{
+    position:relative;
+    z-index:20;
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 18px;
+    height:56px;
+    background:linear-gradient(160deg,#3a2712,#1c1206 75%);
+    border-bottom:2px solid var(--frame-dark);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,0.7);
+    overflow-x:auto;
+  }
+  .brand{
+    font-family:'Gaegu', cursive;
+    font-weight:700;
+    font-size:1.5rem;
+    color:var(--chalk-yellow);
+    letter-spacing:2px;
+    text-decoration:none;
+    white-space:nowrap;
+    margin-right:8px;
+  }
+  .brand::before{ content:"✎ "; color:var(--chalk-red); }
+  nav.menu{ display:flex; align-items:center; gap:4px; }
+  nav.menu a{
+    font-family:'Gaegu', cursive;
+    font-size:1.15rem;
+    color:var(--chalk-dim);
+    text-decoration:none;
+    padding:6px 14px;
+    border-radius:6px;
+    white-space:nowrap;
+    transition:color 0.2s, background 0.2s;
+  }
+  nav.menu a:hover{ color:var(--chalk); background:rgba(236,232,214,0.06); }
+  nav.menu a.active{ color:var(--chalk-yellow); background:rgba(231,217,122,0.12); }
+
+  /* ── 햄버거 버튼 (모바일 전용) ── */
+  .hamburger{
+    display:none;
+    margin-left:auto;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+    width:40px;
+    height:40px;
+    padding:9px 8px;
+    background:transparent;
+    border:1px solid rgba(236,232,214,0.25);
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .hamburger span{
+    display:block;
+    height:2px;
+    width:100%;
+    background:var(--chalk);
+    border-radius:2px;
+    transition:transform 0.25s, opacity 0.2s;
+  }
+  .hamburger[aria-expanded="true"] span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .hamburger[aria-expanded="true"] span:nth-child(2){ opacity:0; }
+  .hamburger[aria-expanded="true"] span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .backdrop{ display:none; }
+
+  /* ── 콘텐츠 ── */
+  main.content{ flex:1 1 auto; position:relative; background:#0a0704; }
+  main.content iframe{
+    display:block;
+    width:100%;
+    height:100%;
+    border:0;
+  }
+
+  /* ── 홈 화면 ── */
+  #home{
+    position:absolute;
+    inset:0;
     display:flex;
     align-items:center;
     justify-content:center;
     padding:36px 14px;
+    background:radial-gradient(ellipse at 50% -10%, #241a10 0%, #0a0704 60%);
+    overflow:auto;
   }
-  .stage{ width:100%; max-width:660px; }
-
+  #home[hidden]{ display:none; }
   .frame{
+    width:100%;
+    max-width:660px;
     background:linear-gradient(160deg,#3a2712,#1c1206 70%);
     border-radius:10px;
     padding:14px;
@@ -45,50 +133,148 @@
     box-shadow:inset 0 0 60px rgba(0,0,0,0.6);
   }
   h1{
-    font-family:'Gaegu', cursive;
-    font-weight:700;
-    text-align:center;
-    color:var(--chalk-yellow);
-    font-size:2rem;
-    margin:0 0 6px;
-    letter-spacing:2px;
+    font-family:'Gaegu', cursive; font-weight:700; text-align:center;
+    color:var(--chalk-yellow); font-size:2rem; margin:0 0 6px; letter-spacing:2px;
   }
-  .sub{
-    text-align:center;
-    color:var(--chalk-dim);
-    font-size:0.9rem;
-    margin-bottom:34px;
-  }
+  .sub{ text-align:center; color:var(--chalk-dim); font-size:0.9rem; margin-bottom:34px; }
   ul.toc{ list-style:none; margin:0; padding:0; }
   ul.toc li{
-    margin:0 0 16px;
-    padding-bottom:16px;
+    margin:0 0 16px; padding-bottom:16px;
     border-bottom:1px dashed rgba(236,232,214,0.18);
   }
   ul.toc li:last-child{ border-bottom:none; }
   ul.toc a{
-    font-family:'Gaegu', cursive;
-    font-size:1.5rem;
-    color:var(--chalk);
-    text-decoration:none;
-    transition:color 0.2s;
+    font-family:'Gaegu', cursive; font-size:1.5rem;
+    color:var(--chalk); text-decoration:none; transition:color 0.2s;
   }
   ul.toc a::before{ content:"✎ "; color:var(--chalk-red); }
   ul.toc a:hover{ color:var(--chalk-yellow); }
+
+  /* ── 모바일 ── */
+  @media (max-width:640px){
+    header.topbar{ overflow:visible; }
+    .hamburger{ display:flex; }
+    nav.menu{
+      position:absolute;
+      top:100%;
+      left:0;
+      right:0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:4px;
+      padding:8px;
+      background:linear-gradient(160deg,#3a2712,#1c1206 75%);
+      border-bottom:2px solid var(--frame-dark);
+      box-shadow:0 12px 24px -10px rgba(0,0,0,0.8);
+      transform:translateY(-8px);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 0.18s, transform 0.18s;
+    }
+    nav.menu.open{ transform:translateY(0); opacity:1; pointer-events:auto; }
+    nav.menu a{ font-size:1.3rem; padding:12px 14px; }
+    .backdrop{
+      display:block;
+      position:fixed;
+      inset:56px 0 0 0;
+      z-index:15;
+      background:transparent;
+    }
+    .backdrop[hidden]{ display:none; }
+  }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="frame">
-      <div class="board">
-        <h1>목 차</h1>
-        <p class="sub">읽고 싶은 이야기를 선택하세요</p>
-        <ul class="toc">
-          <li><a href="the-curse-of-jiwon-han.html">한지원의 저주</a></li>
-          <li><a href="tokyo-escape-game.html">크라임씬 in 도쿄</a></li>
-        </ul>
+  <header class="topbar">
+    <a class="brand" href="#">목차</a>
+    <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="menu" id="menu"></nav>
+  </header>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <main class="content">
+    <div id="home">
+      <div class="frame">
+        <div class="board">
+          <h1>목 차</h1>
+          <p class="sub">읽고 싶은 이야기를 선택하세요</p>
+          <ul class="toc" id="home-list"></ul>
+        </div>
       </div>
     </div>
-  </div>
+    <iframe id="viewer" title="이야기" hidden></iframe>
+  </main>
+
+<script>
+  // 새 이야기를 추가하려면 여기에만 한 줄 추가하면 됩니다.
+  const ROUTES = [
+    { key: 'jiwon', title: '한지원의 저주',   src: 'the-curse-of-jiwon-han.html' },
+    { key: 'tokyo', title: '크라임씬 in 도쿄', src: 'tokyo-escape-game.html' },
+  ];
+
+  const menu      = document.getElementById('menu');
+  const homeList  = document.getElementById('home-list');
+  const home      = document.getElementById('home');
+  const viewer    = document.getElementById('viewer');
+  const hamburger = document.getElementById('hamburger');
+  const backdrop  = document.getElementById('backdrop');
+
+  // 상단 메뉴 & 홈 목록 생성
+  ROUTES.forEach(r => {
+    const a = document.createElement('a');
+    a.href = '#' + r.key;
+    a.textContent = r.title;
+    a.dataset.key = r.key;
+    menu.appendChild(a);
+
+    const li = document.createElement('li');
+    const la = document.createElement('a');
+    la.href = '#' + r.key;
+    la.textContent = r.title;
+    li.appendChild(la);
+    homeList.appendChild(li);
+  });
+
+  function render() {
+    const key = location.hash.replace(/^#/, '');
+    const route = ROUTES.find(r => r.key === key);
+
+    // 메뉴 활성화 표시
+    menu.querySelectorAll('a').forEach(a =>
+      a.classList.toggle('active', a.dataset.key === key));
+
+    if (route) {
+      if (viewer.dataset.key !== route.key) {
+        viewer.src = route.src;
+        viewer.dataset.key = route.key;
+      }
+      viewer.hidden = false;
+      home.hidden = true;
+      document.title = route.title;
+    } else {
+      viewer.hidden = true;
+      home.hidden = false;
+      document.title = '탈출 이야기';
+    }
+  }
+
+  // 모바일 메뉴 토글
+  function setMenu(open){
+    menu.classList.toggle('open', open);
+    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    backdrop.hidden = !open;
+  }
+  hamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    setMenu(!menu.classList.contains('open'));
+  });
+  menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
+  backdrop.addEventListener('click', () => setMenu(false));
+
+  window.addEventListener('hashchange', () => { render(); setMenu(false); });
+  render();
+</script>
 </body>
 </html>
