@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>목차</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --frame:#241609;
+    --frame-dark:#150c05;
+    --board:#16241c;
+    --board-dark:#0d1712;
+    --chalk:#ECE8D6;
+    --chalk-dim:#9CAC9A;
+    --chalk-yellow:#E7D97A;
+    --chalk-red:#DE8088;
+    --chalk-red-dim:#8a4a4f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:radial-gradient(ellipse at 50% -10%, #241a10 0%, #0a0704 60%);
+    font-family:'Nanum Gothic', sans-serif;
+    color:var(--chalk);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:36px 14px;
+  }
+  .stage{ width:100%; max-width:660px; }
+
+  .frame{
+    background:linear-gradient(160deg,#3a2712,#1c1206 70%);
+    border-radius:10px;
+    padding:14px;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5);
+  }
+  .board{
+    background:linear-gradient(160deg,var(--board),var(--board-dark));
+    border-radius:6px;
+    padding:44px 30px 50px;
+    box-shadow:inset 0 0 60px rgba(0,0,0,0.6);
+  }
+  h1{
+    font-family:'Gaegu', cursive;
+    font-weight:700;
+    text-align:center;
+    color:var(--chalk-yellow);
+    font-size:2rem;
+    margin:0 0 6px;
+    letter-spacing:2px;
+  }
+  .sub{
+    text-align:center;
+    color:var(--chalk-dim);
+    font-size:0.9rem;
+    margin-bottom:34px;
+  }
+  ul.toc{ list-style:none; margin:0; padding:0; }
+  ul.toc li{
+    margin:0 0 16px;
+    padding-bottom:16px;
+    border-bottom:1px dashed rgba(236,232,214,0.18);
+  }
+  ul.toc li:last-child{ border-bottom:none; }
+  ul.toc a{
+    font-family:'Gaegu', cursive;
+    font-size:1.5rem;
+    color:var(--chalk);
+    text-decoration:none;
+    transition:color 0.2s;
+  }
+  ul.toc a::before{ content:"✎ "; color:var(--chalk-red); }
+  ul.toc a:hover{ color:var(--chalk-yellow); }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="frame">
+      <div class="board">
+        <h1>목 차</h1>
+        <p class="sub">읽고 싶은 이야기를 선택하세요</p>
+        <ul class="toc">
+          <li><a href="the-curse-of-jiwon-han.html">한지원의 저주</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
