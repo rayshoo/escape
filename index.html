@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>탈출 이야기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
@@ -182,9 +183,64 @@
     }
     .backdrop[hidden]{ display:none; }
   }
+
+  /* ── 인증 게이트 ── */
+  #gate{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 14px;
+    background:radial-gradient(ellipse at 50% -10%, #241a10 0%, #0a0704 60%);
+  }
+  #gate[hidden]{ display:none; }
+  #gate .frame{ max-width:400px; }
+  #gate .board{ padding:40px 28px 40px; }
+  #gate form{ display:flex; flex-direction:column; gap:12px; margin-top:6px; }
+  #gate input{
+    font-family:'Nanum Gothic', sans-serif;
+    font-size:1rem;
+    padding:12px 14px;
+    border-radius:6px;
+    border:1px solid rgba(236,232,214,0.25);
+    background:rgba(0,0,0,0.28);
+    color:var(--chalk);
+    text-align:center;
+  }
+  #gate input:focus{ outline:none; border-color:var(--chalk-yellow); }
+  #gate button{
+    font-family:'Gaegu', cursive;
+    font-size:1.25rem;
+    padding:10px 14px;
+    border-radius:6px;
+    border:0;
+    cursor:pointer;
+    background:var(--chalk-yellow);
+    color:#241609;
+    font-weight:700;
+    transition:filter 0.2s;
+  }
+  #gate button:hover{ filter:brightness(1.08); }
+  #gate .err{ min-height:18px; text-align:center; color:var(--chalk-red); font-size:0.85rem; }
 </style>
 </head>
 <body>
+  <div id="gate" hidden>
+    <div class="frame">
+      <div class="board">
+        <h1>입 장</h1>
+        <p class="sub">비밀번호를 입력하세요</p>
+        <form id="gate-form">
+          <input id="gate-input" type="password" autocomplete="current-password" placeholder="비밀번호">
+          <button type="submit">들어가기</button>
+          <div class="err" id="gate-err"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <a class="brand" href="#">목차</a>
     <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
@@ -273,8 +329,47 @@
   menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
   backdrop.addEventListener('click', () => setMenu(false));
 
-  window.addEventListener('hashchange', () => { render(); setMenu(false); });
-  render();
+  // ── 간단한 비밀번호 게이트 (클라이언트 전용, 가벼운 문턱) ──
+  // 소스를 열면 비밀번호가 보이는 수준의 약식 인증입니다.
+  const PASSWORD = '건전한방탈방';        // ← 원하는 비밀번호로 변경하세요
+  const AUTH_KEY = 'escape-auth';
+  const gate      = document.getElementById('gate');
+  const gateForm  = document.getElementById('gate-form');
+  const gateInput = document.getElementById('gate-input');
+  const gateErr   = document.getElementById('gate-err');
+
+  function unlock(){
+    gate.hidden = true;
+    render();
+  }
+
+  gateForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (gateInput.value === PASSWORD){
+      try { sessionStorage.setItem(AUTH_KEY, 'ok'); } catch (_) {}
+      unlock();
+    } else {
+      gateErr.textContent = '비밀번호가 올바르지 않습니다.';
+      gateInput.value = '';
+      gateInput.focus();
+    }
+  });
+
+  window.addEventListener('hashchange', () => {
+    if (!gate.hidden) return;   // 아직 잠긴 상태면 무시
+    render();
+    setMenu(false);
+  });
+
+  // 초기 진입: 세션에 인증 기록이 있으면 통과, 없으면 게이트 표시
+  let authed = false;
+  try { authed = sessionStorage.getItem(AUTH_KEY) === 'ok'; } catch (_) {}
+  if (authed) {
+    unlock();
+  } else {
+    gate.hidden = false;
+    gateInput.focus();
+  }
 </script>
 </body>
 </html>
