@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<script>
+  // 셸(index.html)을 거치지 않고 직접 열면 목차로 돌려보냅니다.
+  if (window.top === window.self) location.replace('index.html#jongno');
+</script>
+<title>종로에서 생긴일</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1224; --bg2:#241a30; --card:#2c2038; --card-hi:#382a48;
+    --pink:#ff4d8d; --amber:#ffb454; --green:#5fd9a0;
+    --text:#f5eee8; --text-dim:#b3a2be; --line:#3d2e4d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255,77,141,0.12), transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(255,180,84,0.10), transparent 45%),
+      var(--bg);
+    color:var(--text); font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh; padding:24px 16px 60px; overflow-x:hidden;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  .sign{text-align:center; padding:22px 10px 26px;}
+  .sign .eyebrow{font-size:12px; letter-spacing:4px; color:var(--amber); font-weight:700;}
+  .sign h1{
+    font-family:'Jua', sans-serif; font-size:38px; margin-top:6px;
+    background:linear-gradient(90deg, var(--pink), var(--amber));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sign .sub{color:var(--text-dim); font-size:13px; margin-top:4px;}
+
+  .scorebar{display:flex; gap:8px; overflow-x:auto; padding:14px 4px 20px; scrollbar-width:none; position:sticky; top:0; background:var(--bg); z-index:50;}
+  .scorebar::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto; display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:5px 12px 5px 5px; font-size:12px; transition:all .4s;}
+  .chip.out{opacity:.3; filter:grayscale(1); transform:scale(.92);}
+  .chip .dot{width:22px; height:22px; border-radius:50%; flex-shrink:0; overflow:hidden;}
+  .chip .pt{font-weight:700; color:var(--amber);}
+
+  .part{background:var(--bg2); border:1px solid var(--line); border-radius:18px; padding:22px 18px 26px; margin-bottom:18px; position:relative; transition:opacity .3s;}
+  .part.locked{opacity:.35; pointer-events:none;}
+  .part.locked::after{content:'🔒 이전 파트를 완료하세요'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text-dim); background:rgba(26,18,36,.5); border-radius:18px;}
+  .part-label{font-size:11px; color:var(--pink); letter-spacing:2px; font-weight:700; margin-bottom:4px;}
+  .part-title{font-family:'Jua', sans-serif; font-size:22px; margin-bottom:4px;}
+  .part-desc{color:var(--text-dim); font-size:13px; margin-bottom:18px; line-height:1.5;}
+  .avatar{width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Jua', sans-serif; color:#fff; font-size:1.4em; object-fit:cover;}
+
+  /* PART1 duel */
+  .swipe-progress{text-align:center; font-size:12px; color:var(--text-dim); margin-bottom:10px;}
+  .duel-wrap{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .duel-card{flex:1; background:var(--card); border:2px solid var(--line); border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:22px 12px; cursor:pointer; transition:transform .18s, border-color .18s, opacity .3s; text-align:center; min-height:220px;}
+  .duel-card:hover{border-color:var(--pink); transform:translateY(-3px);}
+  .duel-card.win{border-color:var(--amber); transform:scale(1.04);}
+  .duel-card.lose{opacity:0; transform:scale(.9);}
+  .duel-card .avatar-lg{width:96px; height:96px; margin-bottom:12px; overflow:hidden;}
+  .duel-card .name{font-family:'Jua'; font-size:20px;}
+  .duel-card .tag{color:var(--text-dim); font-size:11.5px; margin-top:4px; line-height:1.4;}
+  .duel-vs{font-family:'Jua'; font-size:16px; color:var(--amber); flex:0 0 auto;}
+
+  /* PART2 seating */
+  .table-wrap{display:flex; justify-content:center; margin-bottom:16px;}
+  .table{position:relative; width:280px; height:280px; margin:0 auto;}
+  .seat.me-seat{border-style:solid; border-color:var(--amber); border-width:3px;}
+  .table-center{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:110px; height:110px; border-radius:50%; background:radial-gradient(circle, var(--card-hi), var(--card)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-dim); text-align:center; padding:10px;}
+  .seat{position:absolute; width:46px; height:46px; border-radius:50%; background:var(--card); border:2px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text-dim); overflow:visible;}
+  .seat.filled{border-style:solid; border-color:var(--pink);}
+  .pool{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:14px;}
+  .token{width:46px; height:46px; border-radius:50%; cursor:grab; display:flex; align-items:center; justify-content:center; font-family:'Jua'; font-size:12px; color:#fff;}
+  .token.placed{opacity:0.25; cursor:default;}
+  .chem-log{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--text-dim); min-height:20px; line-height:1.6; margin-bottom:14px;}
+
+  /* shared choice list */
+  .choice-list{display:flex; flex-direction:column; gap:10px;}
+  .choice{display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; text-align:left;}
+  .choice:hover{border-color:var(--pink);}
+  .choice.selected{border-color:var(--amber); background:var(--card-hi);}
+  .choice.disabled{opacity:.4; pointer-events:none;}
+  .choice .mini{width:38px; height:38px; border-radius:50%; flex-shrink:0; overflow:hidden;}
+  .choice .line{font-size:13px; line-height:1.4;}
+  .choice .who{font-size:11px; color:var(--amber); font-weight:700; margin-bottom:2px;}
+
+  /* PART3 roulette */
+  .roulette-wrap{display:flex; flex-direction:column; align-items:center; margin-bottom:18px;}
+  .roulette{width:120px; height:120px; border-radius:50%; background:conic-gradient(var(--pink) 0 60deg, var(--amber) 60deg 120deg, var(--card-hi) 120deg 180deg, var(--pink) 180deg 240deg, var(--amber) 240deg 300deg, var(--card-hi) 300deg 360deg); display:flex; align-items:center; justify-content:center; font-size:26px; transition:transform 1.8s cubic-bezier(.2,.8,.2,1); border:3px solid var(--line);}
+  .action-btn{margin-top:12px; background:var(--pink); color:#fff; border:none; border-radius:999px; padding:9px 22px; font-weight:700; font-size:13px; cursor:pointer;}
+  .action-btn:disabled{opacity:.4; cursor:default;}
+  .question-box{background:var(--card-hi); border-radius:12px; padding:14px 16px; margin:16px 0; font-size:14px; text-align:center; font-weight:500;}
+
+  /* PART4 timing */
+  .timing-track{position:relative; height:34px; background:var(--card); border-radius:999px; margin:14px 0 8px; overflow:hidden; border:1px solid var(--line);}
+  .timing-zone{position:absolute; top:0; bottom:0; width:18%; left:41%; background:rgba(95,217,160,.25); border-left:2px dashed var(--green); border-right:2px dashed var(--green);}
+  .timing-cursor{position:absolute; top:0; bottom:0; width:4px; background:var(--pink); left:0; border-radius:2px;}
+  .timing-target-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  .target-chip{flex:1 1 auto; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center; font-size:12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .target-chip.sel{border-color:var(--amber); background:var(--card-hi);}
+  .target-chip img,.target-chip .avatar{width:36px; height:36px;}
+
+  /* PART5 hidden object */
+  .photo-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;}
+  .photo-card{position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px; text-align:center; overflow:hidden;}
+  .photo-frame{position:relative; height:110px; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-dim); overflow:hidden;}
+  .hidden-spot{position:absolute; width:34px; height:34px; border-radius:50%; cursor:pointer;}
+  .photo-card .cname{font-size:12px; font-weight:700;}
+  .photo-card.found{border-color:var(--green);}
+  .photo-card.found::before{content:'✓ 발견!'; position:absolute; top:6px; right:8px; font-size:10px; color:var(--green); font-weight:700;}
+
+  /* PART6 flip cards */
+  .flip-row{display:flex; gap:12px; justify-content:center; margin-bottom:14px;}
+  .flip-card{width:100px; height:130px; perspective:800px; cursor:pointer;}
+  .flip-inner{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d;}
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-front,.flip-back{position:absolute; inset:0; backface-visibility:hidden; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:8px; text-align:center; font-size:11px; border:1px solid var(--line);}
+  .flip-front{background:var(--card-hi); font-family:'Jua'; font-size:26px; color:var(--pink);}
+  .flip-back{background:var(--card); transform:rotateY(180deg); line-height:1.4;}
+
+  /* PART7 dial */
+  .dial-row{display:flex; justify-content:center; gap:24px; margin:20px 0;}
+  .dial{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .dial-face{width:70px; height:70px; border-radius:50%; overflow:hidden; border:2px solid var(--line);}
+  .dial button{background:var(--card); border:1px solid var(--line); color:var(--text); width:32px; height:28px; border-radius:8px; cursor:pointer; font-size:14px;}
+  .dial .dname{font-size:11px; color:var(--text-dim);}
+  .shake{animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);}}
+
+  .result-panel{margin-top:16px; background:var(--card); border:1px solid var(--amber); border-radius:14px; padding:16px; font-size:13px; line-height:1.6; display:none;}
+  .result-panel.show{display:block;}
+  .result-panel b{color:var(--amber);}
+  .ending-panel{margin-top:16px; background:linear-gradient(135deg, var(--card-hi), var(--card)); border:1px solid var(--pink); border-radius:16px; padding:22px; text-align:center; display:none;}
+  .ending-panel.show{display:block;}
+  .ending-panel .avatar-xl{width:90px; height:90px; margin:0 auto 12px; overflow:hidden;}
+  .ending-panel h3{font-family:'Jua'; font-size:24px; color:var(--pink); margin-bottom:8px;}
+  .ending-panel p{font-size:13px; color:var(--text-dim); line-height:1.6;}
+  .note{font-size:11.5px; color:var(--text-dim); text-align:center; margin-top:20px; line-height:1.6;}
+  .img-hint{position:absolute; bottom:6px; right:10px; font-size:9px; color:var(--text-dim); opacity:.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="sign">
+    <div class="eyebrow">종로 · 어느 술벙개의 밤</div>
+    <h1>종로에서 생긴일</h1>
+    <div class="sub">선택할수록, 누군가는 마음을 얻고 누군가는 자리를 뜬다</div>
+  </div>
+
+  <div class="scorebar" id="scorebar"></div>
+
+  <!-- PART 1 -->
+  <div class="part" id="part1">
+    <div class="part-label">PART 1 · 탈락없음 (6명 전원 등장 · 3매치 토너먼트)</div>
+    <div class="part-title">첫인상 — 이상형 월드컵</div>
+    <div class="part-desc">두 사람 중 마음에 드는 쪽 카드를 탭해주세요. 총 3매치, 6명 전원이 각자의 카드로 등장합니다.</div>
+    <div class="swipe-progress" id="swipeProgress">1 / 3 매치</div>
+    <div class="duel-wrap" id="duelWrap"></div>
+    <div class="img-hint">img: /images/{name}.jpg 로 교체 가능</div>
+  </div>
+
+  <!-- PART 2 -->
+  <div class="part locked" id="part2">
+    <div class="part-label">PART 2 · 탈락 6→5</div>
+    <div class="part-title">자리 배치 게임</div>
+    <div class="part-desc">테이블 맨 위 <b style="color:var(--amber)">'나'</b>는 고정석입니다. 나머지 6명을 드래그해서 남은 좌석에 앉혀보세요. 각 좌석엔 '나'로부터의 거리가 표시돼요 — <b style="color:var(--pink)">가장 먼 자리에 앉은 사람이 탈락</b>합니다.</div>
+    <div class="table-wrap"><div class="table" id="table"></div></div>
+    <div class="pool" id="pool"></div>
+    <div class="result-panel" id="resultPanel2"></div>
+  </div>
+
+  <!-- PART 3 -->
+  <div class="part locked" id="part3">
+    <div class="part-label">PART 3 · 탈락 5→4</div>
+    <div class="part-title">진실게임</div>
+    <div class="part-desc">술잔 룰렛을 돌리면 오늘의 질문이 정해집니다. 살아있는 전원의 대답 중 마음에 드는 걸 골라주세요 — 선택된 사람은 +3점.</div>
+    <div class="roulette-wrap"><div class="roulette" id="roulette">🍶</div><button class="action-btn" id="spinBtn">룰렛 돌리기</button></div>
+    <div class="question-box">룰렛을 돌리면 질문이 공개됩니다</div>
+    <div class="choice-list" id="choiceList3"></div>
+    <div class="result-panel" id="resultPanel3"></div>
+  </div>
+
+  <!-- PART 4 -->
+  <div class="part locked" id="part4">
+    <div class="part-label">PART 4 · 탈락 4→3</div>
+    <div class="part-title">눈치게임</div>
+    <div class="part-desc">먼저 응원할 사람을 고르고, 커서가 초록 구간에 있을 때 "잡기!"를 눌러 타이밍을 맞춰보세요.</div>
+    <div class="timing-target-row" id="timingTargets"></div>
+    <div class="timing-track"><div class="timing-zone"></div><div class="timing-cursor" id="cursor"></div></div>
+    <button class="action-btn" id="grabBtn" disabled>잡기!</button>
+    <div class="result-panel" id="resultPanel4"></div>
+  </div>
+
+  <!-- PART 5 -->
+  <div class="part locked" id="part5">
+    <div class="part-label">PART 5 · 탈락 3→2</div>
+    <div class="part-title">셀카 고르기</div>
+    <div class="part-desc">사진 속 숨겨진 매력 포인트(작은 원)를 클릭해서 찾아보세요. 하나를 찾으면 다음 파트로 넘어갑니다.</div>
+    <div class="photo-grid" id="photoGrid"></div>
+    <div class="result-panel" id="resultPanel5"></div>
+  </div>
+
+  <!-- PART 6 -->
+  <div class="part locked" id="part6">
+    <div class="part-label">PART 6 · 탈락 2→1 (최종 생존자 확정)</div>
+    <div class="part-title">라이어게임</div>
+    <div class="part-desc">카드를 클릭해서 뒤집어 발언을 확인하고, 진심이라고 믿어주고 싶은 카드를 골라주세요.</div>
+    <div class="flip-row" id="flipRow"></div>
+    <div class="choice-list" id="choiceList6" style="display:none"></div>
+    <div class="result-panel" id="resultPanel6"></div>
+  </div>
+
+  <!-- PART 7 -->
+  <div class="part locked" id="part7">
+    <div class="part-label">PART 7 · 파이널</div>
+    <div class="part-title">마지막 질문</div>
+    <div class="part-desc">오늘 밤 끝까지 살아남은 단 한 사람이 다가와 마지막으로 묻는다.</div>
+    <div id="finalStage"></div>
+    <div class="ending-panel" id="endingPanel"></div>
+  </div>
+
+  <div class="note">전 파트가 순서대로 연결된 데모입니다. 점수는 상단 스코어바에서 실시간으로 확인할 수 있어요.</div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const CHAR = [
+  {id:'hs', name:'헌성', color:'#5b4b8a', img:'images/hs.jpg', tag:'저음 · 큰키 · 여유'},
+  {id:'jw', name:'지원', color:'#c96b8a', img:'images/jw.jpg', tag:'둥글둥글 · 리액션王'},
+  {id:'bc', name:'병찬', color:'#e0a85a', img:'images/bc.jpg', tag:'귀염상 · 순한 미소'},
+  {id:'dh', name:'다훈', color:'#3f7a6b', img:'images/dh.jpg', tag:'고려대 · 팩폭러'},
+  {id:'sy', name:'승언', color:'#7a4b4b', img:'images/sy.jpg', tag:'근육 · 굉장히 노잼'},
+  {id:'hm', name:'현명', color:'#8a5b9e', img:'images/hm.jpg', tag:'어른스러움 · 색기'},
+];
+const ENDING = {
+  hs:'"다음에 또 보자, 이번엔 내가 먼저 연락할게." 여유로운 능글男 엔딩.',
+  jw:'노래 한 소절 불러주며 자연스럽게 번호를 교환하는 훈훈한 해피엔딩.',
+  bc:'수줍게 웃으며 "저 진짜 잘할게요" — 순정 엔딩.',
+  dh:'팩폭하면서도 은근히 챙겨주는 츤데레 엔딩.',
+  sy:'무뚝뚝했던 그가 마지막에 진지하게 고백하는 반전 매력 엔딩.',
+  hm:'"집 앞까지 데려다줄게, 아니 데려갈게." 여운 남기는 색기 엔딩.',
+};
+const REJECT_ENDING = {
+  hs:'"그래…? 뭐 어쩔 수 없지." 쿨한 척 뒤돌아서지만, 저음 끝이 살짝 떨린다.',
+  jw:'"헐 진짜요? 흐엥 그럼 다음에 술 한 잔이라도 해요!" 특유의 밝음으로 넘긴다.',
+  bc:'"아... 네, 알겠어요." 살짝 시무룩해지지만 이내 웃어 보인다.',
+  dh:'"역시 그럴 줄 알았어. 근데 번호는 주고 가." 팩폭 섞인 여유로 마무리한다.',
+  sy:'"…그래." 표정 변화 없이 담담하게 받아들이고 자리를 정리한다.',
+  hm:'"아쉽네, 오늘은 아니구나." 여유롭게 웃으며 조용히 물러난다.',
+};
+let score = {}; CHAR.forEach(c=>score[c.id]=0);
+let out = {};
+
+function avatarHTML(c){
+  return `<img class="avatar" src="${c.img}" style="background:${c.color}"
+    onerror="this.onerror=null;this.removeAttribute('src');this.style.background='${c.color}';this.innerHTML='${c.name[0]}'">`;
+}
+function alive(){ return CHAR.filter(c=>!out[c.id]); }
+
+function renderScoreBar(){
+  document.getElementById('scorebar').innerHTML = CHAR.map(c=>`
+    <div class="chip ${out[c.id]?'out':''}">
+      <div class="dot">${avatarHTML(c)}</div>
+      <span>${c.name}</span><span class="pt">${score[c.id]}</span>
+    </div>`).join('');
+}
+renderScoreBar();
+
+function eliminateLowest(){
+  const pool = alive();
+  const min = Math.min(...pool.map(c=>score[c.id]));
+  const lowest = pool.filter(c=>score[c.id]===min);
+  const picked = lowest[Math.floor(Math.random()*lowest.length)];
+  out[picked.id] = true;
+  renderScoreBar();
+  return {picked, tied: lowest.length>1, tiedNames: lowest.map(c=>c.name).join(', ')};
+}
+function unlock(partId){ document.getElementById(partId).classList.remove('locked'); document.getElementById(partId).scrollIntoView({behavior:'smooth', block:'center'}); }
+
+/* ================= PART 1: DUEL (6명 전원, 3매치) ================= */
+const pairs = [[0,1],[2,3],[4,5]];
+let pairIdx = 0;
+function loadSwipe(){
+  const wrap = document.getElementById('duelWrap');
+  document.getElementById('swipeProgress').textContent = `${Math.min(pairIdx+1,3)} / 3 매치`;
+  if(pairIdx >= pairs.length){
+    wrap.innerHTML = `<div class="duel-card" style="cursor:default; flex:1"><div style="font-size:40px;margin-bottom:10px">🏆</div><div class="name">6명 모두 확인 완료!</div><div class="tag">엔딩 분위기에 반영됩니다</div></div>`;
+    unlock('part2');
+    return;
+  }
+  const [a,b] = pairs[pairIdx];
+  wrap.innerHTML = `
+    <div class="duel-card" data-side="a">
+      <div class="avatar-lg">${avatarHTML(CHAR[a])}</div>
+      <div class="name">${CHAR[a].name}</div><div class="tag">${CHAR[a].tag}</div>
+    </div>
+    <div class="duel-vs">VS</div>
+    <div class="duel-card" data-side="b">
+      <div class="avatar-lg">${avatarHTML(CHAR[b])}</div>
+      <div class="name">${CHAR[b].name}</div><div class="tag">${CHAR[b].tag}</div>
+    </div>`;
+  wrap.querySelectorAll('.duel-card').forEach(el=>el.addEventListener('click',()=>{
+    const winSide = el.dataset.side;
+    wrap.querySelectorAll('.duel-card').forEach(x=>{
+      if(x.dataset.side===winSide) x.classList.add('win'); else x.classList.add('lose');
+    });
+    setTimeout(()=>{ pairIdx++; loadSwipe(); }, 420);
+  }));
+}
+loadSwipe();
+
+/* ================= PART 2: SEATING (나 기준, 최원거리 탈락) ================= */
+const table = document.getElementById('table'), pool = document.getElementById('pool');
+const SEATS = 7; // 나 + 6명
+const CENTER = 140, RADIUS = 118;
+let seatOccupant = Array(SEATS).fill(null); // index 0 = 나
+seatOccupant[0] = 'ME';
+
+function seatDistance(i){ return Math.min(i, SEATS - i); } // 1~3
+for(let i=0;i<SEATS;i++){
+  const angle = -Math.PI/2 + i*(2*Math.PI/SEATS);
+  const x = CENTER + RADIUS*Math.cos(angle), y = CENTER + RADIUS*Math.sin(angle);
+  const seat = document.createElement('div');
+  seat.className = 'seat' + (i===0 ? ' me-seat' : '');
+  seat.dataset.seat = i;
+  seat.style.left = x+'px'; seat.style.top = y+'px'; seat.style.transform='translate(-50%,-50%)';
+  if(i===0){
+    seat.innerHTML = `<div class="avatar" style="background:${'#ffb454'}">나</div>`;
+  } else {
+    seat.innerHTML = `<span style="font-size:9px">${seatDistance(i)}칸</span>`;
+    seat.addEventListener('dragover', e=>e.preventDefault());
+    seat.addEventListener('drop', e=>{ e.preventDefault(); placeToken(e.dataTransfer.getData('text/plain'), i); });
+  }
+  table.appendChild(seat);
+}
+function renderPool(){
+  pool.innerHTML='';
+  CHAR.forEach(c=>{
+    const placed = seatOccupant.includes(c.id);
+    const t=document.createElement('div'); t.className='token'+(placed?' placed':''); t.style.background=c.color; t.textContent=c.name; t.draggable=!placed;
+    t.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',c.id));
+    pool.appendChild(t);
+  });
+}
+renderPool();
+function placeToken(cid, seatIdx){
+  if(seatOccupant[seatIdx]) return;
+  if(seatOccupant.includes(cid)) return;
+  seatOccupant[seatIdx] = cid;
+  const c = CHAR.find(x=>x.id===cid);
+  const seatEl = document.querySelector(`.seat[data-seat="${seatIdx}"]`);
+  seatEl.classList.add('filled');
+  seatEl.innerHTML = avatarHTML(c) + `<span style="position:absolute;bottom:-16px;font-size:9px;color:var(--text-dim)">${seatDistance(seatIdx)}칸</span>`;
+  renderPool();
+  if(seatOccupant.slice(1).every(v=>v)) resolveSeating();
+}
+function resolveSeating(){
+  const dists = seatOccupant.map((cid,i)=> i===0? null : {cid, d:seatDistance(i)}).filter(Boolean);
+  const maxD = Math.max(...dists.map(x=>x.d));
+  const farthest = dists.filter(x=>x.d===maxD);
+  const chosen = farthest[Math.floor(Math.random()*farthest.length)];
+  out[chosen.cid] = true;
+  renderScoreBar();
+  const c = CHAR.find(x=>x.id===chosen.cid);
+  const panel = document.getElementById('resultPanel2');
+  panel.innerHTML = (farthest.length>1 ? `'나'로부터 가장 먼 자리(${maxD}칸)에 동률로 앉은 사람 중 제비뽑기로 ` : `'나'로부터 가장 먼 자리(${maxD}칸)에 앉은 `) + `<b>${c.name}</b>이(가) 자리를 떴습니다. 5명이 남았어요.`;
+  panel.classList.add('show');
+  setTimeout(()=>unlock('part3'), 700);
+}
+
+
+/* ================= PART 3: TRUTH GAME (룰렛 = 질문 결정) ================= */
+const spinBtn=document.getElementById('spinBtn'), roulette=document.getElementById('roulette');
+let spun=false;
+
+const QUESTIONS3 = [
+  { q:'"오늘 여기서 자고 싶은 사람 있어?"',
+    lines:{
+      hs:'"…굳이 말 안 해도 알잖아." 저음으로 여유롭게 웃는다.',
+      jw:'"저요! 저 완전 있어요, 근데 비밀!" 오버 리액션.',
+      bc:'"저, 저는 그런 거 아직 잘…" 얼굴이 빨개진다.',
+      dh:'"그런 걸 왜 물어, 오글거리게." 팩폭하며 시선을 피한다.',
+      sy:'"…없는데." 1초 만에 단답으로 끝낸다.',
+      hm:'"천천히 알아가면 되지, 급할 거 없잖아." 나긋하게 말한다.'
+    }},
+  { q:'"오늘 여기서 제일 매력 있다고 생각하는 사람은?"',
+    lines:{
+      hs:'"거울 보면 알지." 능글맞게 웃으며 넘긴다.',
+      jw:'"음~ 다 매력있는데, 그중에 하나만 고르라면…" 고민하는 척.',
+      bc:'"저는 딱히 자신은 없지만…" 웃으며 얼버무린다.',
+      dh:'"매력은 결국 지능 아니야?" 혼자 논리를 편다.',
+      sy:'"몸." 진지하게 자기 팔을 가리킨다.',
+      hm:'"이미 알고 있잖아, 굳이 말해야 돼?" 여유롭게 웃는다.'
+    }},
+  { q:'"솔직히 오늘 여기 왜 나왔어?"',
+    lines:{
+      hs:'"그냥 심심해서. …라고 하기엔 좀 신경 쓰긴 했어." 저음으로 슬쩍 인정.',
+      jw:'"사람들이랑 노는 게 세상에서 제일 좋아서요!" 진심으로 밝게 웃는다.',
+      bc:'"친구가 가자고 해서… 근데 오길 잘한 것 같아요." 수줍게 웃는다.',
+      dh:'"통계적으로 이런 자리에서 인연 확률이 제일 높거든." 진지하게 분석한다.',
+      sy:'"운동 끝나고 딱히 할 일이 없어서." 무심하게 답한다.',
+      hm:'"밤이 좋아서. 그리고… 어쩌면 누굴 만날까 싶어서." 나긋하게 웃는다.'
+    }},
+];
+let pickedQ3 = null;
+
+spinBtn.addEventListener('click',()=>{
+  if(spun) return; spun=true;
+  const finalDeg = 1440 + Math.floor(Math.random()*360);
+  roulette.style.transform = `rotate(${finalDeg}deg)`;
+  spinBtn.textContent='돌아가는 중...';
+  setTimeout(()=>{
+    spinBtn.textContent='오늘의 질문 결정!';
+    spinBtn.disabled=true;
+    const qIdx = Math.floor((finalDeg % 360) / (360/QUESTIONS3.length));
+    pickedQ3 = QUESTIONS3[qIdx];
+    document.querySelector('#part3 .question-box').textContent = pickedQ3.q;
+    renderChoices3();
+  },1800);
+});
+
+function renderChoices3(){
+  const cands = alive(); // 살아있는 전원이 선택지로 등장
+  const list=document.getElementById('choiceList3');
+  list.innerHTML = cands.map(c=>`<div class="choice" data-cid="${c.id}"><div class="mini">${avatarHTML(c)}</div><div><div class="who">${c.name}</div><div class="line">${pickedQ3.lines[c.id]}</div></div></div>`).join('');
+  list.querySelectorAll('.choice').forEach(el=>el.addEventListener('click',()=>{
+    list.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected'); el.classList.add('disabled');
+    score[el.dataset.cid]+=3; renderScoreBar();
+    const {picked,tied,tiedNames} = eliminateLowest();
+    const panel=document.getElementById('resultPanel3');
+    panel.innerHTML = (tied? `공동 최하위(${tiedNames}) 중 제비뽑기로 ` : '') + `<b>${picked.name}</b>이(가) 먼저 자리를 떴습니다. 4명이 남았어요.`;
+    panel.classList.add('show');
+    setTimeout(()=>unlock('part4'), 600);
+  }));
+}
+
+/* ================= PART 4: TIMING GAME ================= */
+let selectedTarget4=null, cursorPos=0, cursorDir=1, timingRAF=null;
+function setupPart4(){
+  const cands = alive();
+  document.getElementById('timingTargets').innerHTML = cands.map(c=>`
+    <div class="target-chip" data-cid="${c.id}"><div class="avatar" style="width:36px;height:36px;overflow:hidden">${avatarHTML(c)}</div>${c.name}</div>`).join('');
+  document.querySelectorAll('.target-chip').forEach(el=>el.addEventListener('click',()=>{
+    document.querySelectorAll('.target-chip').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel'); selectedTarget4=el.dataset.cid;
+    document.getElementById('grabBtn').disabled=false;
+    if(!timingRAF) runCursor();
+  }));
+}
+function runCursor(){
+  cursorPos += cursorDir*1.6;
+  if(cursorPos>=96){cursorDir=-1;} if(cursorPos<=0){cursorDir=1;}
+  document.getElementById('cursor').style.left = cursorPos+'%';
+  timingRAF = requestAnimationFrame(runCursor);
+}
+document.getElementById('grabBtn').addEventListener('click',()=>{
+  const inZone = cursorPos>=41 && cursorPos<=59;
+  cancelAnimationFrame(timingRAF); timingRAF=null;
+  document.getElementById('grabBtn').disabled=true;
+  const c = CHAR.find(x=>x.id===selectedTarget4);
+  if(inZone) { score[c.id]+=3; renderScoreBar(); }
+  const {picked,tied,tiedNames} = eliminateLowest();
+  const panel=document.getElementById('resultPanel4');
+  panel.innerHTML = (inZone? `타이밍 성공! <b>${c.name}</b> +3점.<br>` : `아깝다, 타이밍이 살짝 빗나갔어요.<br>`) + (tied? `공동 최하위(${tiedNames}) 중 제비뽑기로 `:'') + `<b>${picked.name}</b>이(가) 자리를 떴습니다. 3명이 남았어요.`;
+  panel.classList.add('show');
+  setTimeout(()=>unlock('part5'), 600);
+});
+
+/* ================= PART 5: HIDDEN OBJECT ================= */
+function setupPart5(){
+  const cands = alive();
+  document.getElementById('photoGrid').innerHTML = cands.map(c=>`
+    <div class="photo-card" data-cid="${c.id}">
+      <div class="photo-frame" style="background:linear-gradient(135deg, ${c.color}, #1a1224)">
+        ${c.name}의 사진
+        <div class="hidden-spot" style="top:${20+Math.random()*50}%; left:${20+Math.random()*50}%; background:rgba(255,255,255,.06)"></div>
+      </div>
+      <div class="cname">${c.name}</div>
+    </div>`).join('');
+  document.querySelectorAll('.photo-card').forEach(card=>{
+    card.querySelector('.hidden-spot').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      if(card.classList.contains('found')) return;
+      card.classList.add('found');
+      const c = CHAR.find(x=>x.id===card.dataset.cid);
+      score[c.id]+=3; renderScoreBar();
+      const {picked,tied,tiedNames} = eliminateLowest();
+      const panel=document.getElementById('resultPanel5');
+      panel.innerHTML = `<b>${c.name}</b>의 숨은 매력 발견! +3점.<br>` + (tied? `공동 최하위(${tiedNames}) 중 제비뽑기로 `:'') + `<b>${picked.name}</b>이(가) 자리를 떴습니다. 2명이 남았어요.`;
+      panel.classList.add('show');
+      setTimeout(()=>unlock('part6'), 600);
+    });
+  });
+}
+
+/* ================= PART 6: LIAR GAME ================= */
+const LINES6={jw:'"나 사실 노래 오디션 본 적 있어"',dh:'"나 사실 고등학교 때 전교 1등 놓친 적 없어"',hm:'"나 사실 소개팅 되게 많이 해봤어"',hs:'"나 사실 술 진짜 약해"',bc:'"나 사실 격투기 배운 적 있어"',sy:'"나 사실 노래 되게 잘해"'};
+function setupPart6(){
+  const cands = alive();
+  document.getElementById('flipRow').innerHTML = cands.map((c,i)=>`
+    <div class="flip-card" data-cid="${c.id}" data-idx="${i}">
+      <div class="flip-inner">
+        <div class="flip-front">?</div>
+        <div class="flip-back">${LINES6[c.id]||'"..."'}</div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.flip-card').forEach(el=>el.addEventListener('click',()=>{
+    el.classList.add('flipped');
+    if(document.querySelectorAll('.flip-card.flipped').length === cands.length){
+      renderChoices6(cands);
+    }
+  }));
+}
+function renderChoices6(cands){
+  const list=document.getElementById('choiceList6');
+  list.style.display='flex';
+  list.innerHTML = cands.map(c=>`<div class="choice" data-cid="${c.id}"><div class="mini">${avatarHTML(c)}</div><div><div class="who">${c.name}</div><div class="line">이 말을 믿어준다</div></div></div>`).join('');
+  list.querySelectorAll('.choice').forEach(el=>el.addEventListener('click',()=>{
+    list.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+    list.querySelectorAll('.choice').forEach(x=>x.classList.add('disabled'));
+    score[el.dataset.cid]+=3; renderScoreBar();
+    const {picked,tied,tiedNames} = eliminateLowest();
+    const panel=document.getElementById('resultPanel6');
+    panel.innerHTML = (tied? `공동 최하위(${tiedNames}) 중 제비뽑기로 `:'') + `<b>${picked.name}</b>이(가) 자리를 떴습니다. 오늘 밤, 단 한 사람이 남았어요.`;
+    panel.classList.add('show');
+    setTimeout(()=>unlock('part7'), 600);
+  }));
+}
+
+/* ================= PART 7: FINAL CHOICE (YES / NO) ================= */
+function setupPart7(){
+  const survivor = alive()[0];
+  const stage = document.getElementById('finalStage');
+  stage.innerHTML = `
+    <div style="text-align:center">
+      <div class="avatar-lg" style="width:110px;height:110px;margin:0 auto 14px;overflow:hidden">${avatarHTML(survivor)}</div>
+      <div class="name" style="font-family:'Jua';font-size:22px">${survivor.name}</div>
+      <div class="question-box" style="font-size:16px; margin-top:14px">"나랑 오늘밤 하러갈래…?"</div>
+      <div style="display:flex; gap:14px; justify-content:center; margin-top:18px">
+        <button class="action-btn" id="yesBtn" style="background:var(--pink); padding:10px 30px; font-size:14px;">YES</button>
+        <button class="action-btn" id="noBtn" style="background:var(--card); border:1px solid var(--line); color:var(--text); padding:10px 30px; font-size:14px;">NO</button>
+      </div>
+    </div>`;
+  document.getElementById('yesBtn').addEventListener('click', ()=>finalReveal(survivor, true));
+  document.getElementById('noBtn').addEventListener('click', ()=>finalReveal(survivor, false));
+}
+function finalReveal(survivor, accepted){
+  document.getElementById('yesBtn').disabled = true;
+  document.getElementById('noBtn').disabled = true;
+  const panel = document.getElementById('endingPanel');
+  const text = accepted ? ENDING[survivor.id] : REJECT_ENDING[survivor.id];
+  panel.innerHTML = `<div class="avatar-xl">${avatarHTML(survivor)}</div><h3>${survivor.name}${accepted? ' 그리고 나':''}</h3><p>${text}</p>`;
+  panel.classList.add('show');
+}
+
+/* ---- part unlock hooks: init sub-games once their part is unlocked ---- */
+const observer = new MutationObserver(()=>{
+  if(!document.getElementById('part4').classList.contains('locked') && !document.getElementById('part4').dataset.init){ document.getElementById('part4').dataset.init=1; setupPart4(); }
+  if(!document.getElementById('part5').classList.contains('locked') && !document.getElementById('part5').dataset.init){ document.getElementById('part5').dataset.init=1; setupPart5(); }
+  if(!document.getElementById('part6').classList.contains('locked') && !document.getElementById('part6').dataset.init){ document.getElementById('part6').dataset.init=1; setupPart6(); }
+  if(!document.getElementById('part7').classList.contains('locked') && !document.getElementById('part7').dataset.init){ document.getElementById('part7').dataset.init=1; setupPart7(); }
+});
+observer.observe(document.body, {attributes:true, subtree:true, attributeFilter:['class']});
+</script>
+</body>
+</html>
