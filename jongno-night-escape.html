@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<script>
+  // 셸(index.html)을 거치지 않고 직접 열면 목차로 돌려보냅니다.
+  if (window.top === window.self) location.replace('index.html#nights');
+</script>
+<title>종로 술벙개 탈출</title>
+<style>
+  :root{
+    --bg-deep:#1a0f0a;
+    --bg-wood:#2e1b12;
+    --wood-line:#4a2e1c;
+    --neon-pink:#ff5c8a;
+    --neon-yellow:#ffcf4d;
+    --paper:#f3e6c8;
+    --danger:#ff3b3b;
+    --safe:#5ee39a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{
+    margin:0; width:100%; height:100%;
+    overflow:hidden;
+  }
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #3a2313 0%, var(--bg-deep) 60%);
+    font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+  }
+  #app{
+    width:100%; max-width:430px; height:100vh; max-height:820px;
+    position:relative;
+    background:
+      repeating-linear-gradient(0deg, var(--wood-line) 0 2px, transparent 2px 34px),
+      linear-gradient(180deg, #241209 0%, #170c07 100%);
+    border-left:1px solid #000; border-right:1px solid #000;
+    box-shadow: 0 0 60px rgba(0,0,0,.8) inset;
+    overflow:hidden;
+  }
+  .screen{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    padding:24px; gap:14px;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- Title ---------- */
+  #titleGlow{
+    font-size:15px; letter-spacing:6px; color:var(--neon-yellow);
+    text-shadow:0 0 8px var(--neon-yellow), 0 0 18px #ff8c00;
+  }
+  h1{
+    font-size:34px; margin:2px 0 0; line-height:1.25;
+    color:var(--neon-pink);
+    text-shadow:0 0 10px var(--neon-pink), 0 0 26px #ff1f6b;
+  }
+  #startScreen p.desc{
+    font-size:13.5px; line-height:1.7; color:#e8d9bd; max-width:320px; opacity:.9;
+  }
+  .rulebox{
+    background:rgba(0,0,0,.35); border:1px solid #55361f; border-radius:12px;
+    padding:12px 16px; font-size:12.5px; line-height:1.8; text-align:left;
+    max-width:320px; color:#f0e2c4;
+  }
+  .rulebox b{color:var(--neon-yellow)}
+  button.primary{
+    margin-top:6px; padding:14px 34px; font-size:17px; font-weight:700;
+    background:linear-gradient(180deg,#ff6f9c,#e8305f);
+    border:none; border-radius:30px; color:#fff; letter-spacing:2px;
+    box-shadow:0 6px 0 #9c1738, 0 8px 18px rgba(0,0,0,.5);
+    cursor:pointer; transition:transform .08s;
+  }
+  button.primary:active{transform:translateY(4px); box-shadow:0 2px 0 #9c1738;}
+
+  /* ---------- Game screen ---------- */
+  #gameScreen{padding:0; justify-content:flex-start;}
+  #hud{
+    width:100%; padding:10px 14px 6px; display:flex; flex-direction:column; gap:6px;
+    background:linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+    position:relative; z-index:5;
+  }
+  #hudTop{display:flex; justify-content:space-between; align-items:center; font-size:13px;}
+  #roundLabel{color:var(--neon-yellow); font-weight:700; letter-spacing:1px;}
+  #livesRow{font-size:16px; letter-spacing:2px;}
+  #scoreLabel{color:#c9b78f; font-size:12px;}
+  #timerBarWrap{width:100%; height:8px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden;}
+  #timerBar{height:100%; width:100%; background:linear-gradient(90deg,var(--safe),var(--neon-yellow)); transition:width .1s linear;}
+
+  #table{
+    width:100%; padding:6px 10px; display:flex; justify-content:space-between;
+    position:relative; z-index:4;
+  }
+  .enemyGroup{flex:1; display:flex; justify-content:center; gap:2px; transition:transform .12s;}
+  .enemyGroup.active{transform:scale(1.18);}
+  .enemy{font-size:26px; filter:drop-shadow(0 0 4px rgba(255,92,138,.5));}
+
+  #laneArea{
+    flex:1; width:100%; display:flex; position:relative;
+    border-top:1px dashed #4a2e1c; border-bottom:1px dashed #4a2e1c;
+  }
+  .lane{
+    flex:1; position:relative; overflow:hidden;
+    border-right:1px dashed rgba(255,255,255,.06);
+  }
+  .lane:last-child{border-right:none;}
+  .tele{
+    position:absolute; left:50%; top:0; transform:translate(-50%,-50%);
+    font-size:34px; pointer-events:none;
+  }
+  .tele-wink{
+    animation:pulseWarn linear forwards;
+    top:14%;
+  }
+  @keyframes pulseWarn{
+    0%{opacity:.3; filter:drop-shadow(0 0 2px #fff);}
+    70%{opacity:1; filter:drop-shadow(0 0 10px var(--neon-pink));}
+    100%{opacity:1; filter:drop-shadow(0 0 16px var(--danger)); transform:translate(-50%,-50%) scale(1.3);}
+  }
+  .tele-kiss{
+    animation:flyDown linear forwards;
+  }
+  @keyframes flyDown{
+    0%{top:0%;}
+    100%{top:96%;}
+  }
+
+  #playerTrack{
+    position:relative; width:100%; height:74px;
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:3;
+  }
+  #player{
+    position:absolute; bottom:6px; font-size:40px;
+    transition:left .14s cubic-bezier(.2,.9,.3,1.2);
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+  }
+  #player.hitFlash{animation:flashRed .35s;}
+  @keyframes flashRed{
+    0%,100%{filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));}
+    50%{filter:drop-shadow(0 0 14px var(--danger)) brightness(2);}
+  }
+
+  #toast{
+    position:absolute; top:44%; left:50%; transform:translate(-50%,-50%) scale(.9);
+    background:rgba(10,6,4,.92); border:1px solid var(--neon-yellow);
+    border-radius:14px; padding:18px 22px; max-width:82%;
+    font-size:14px; line-height:1.7; text-align:center; z-index:20;
+    box-shadow:0 0 30px rgba(0,0,0,.7);
+    opacity:0; transition:opacity .25s, transform .25s;
+    pointer-events:none;
+  }
+  #toast.show{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  #toast b{color:var(--neon-yellow); display:block; font-size:17px; margin-bottom:6px;}
+
+  #jinOverlay{
+    position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:opacity .15s;
+  }
+  #jinOverlay.show{opacity:1; pointer-events:auto;}
+  #jinCard{
+    background:linear-gradient(180deg,#3a1220,#1c0810); border:2px solid var(--neon-pink);
+    border-radius:16px; padding:16px 18px; text-align:center; width:78%;
+    box-shadow:0 0 40px rgba(255,92,138,.4);
+  }
+  #jinCard p{font-size:13.5px; margin:0 0 10px; line-height:1.6; color:#ffd9e4;}
+  #jinTimerWrap{height:6px; background:rgba(255,255,255,.15); border-radius:3px; overflow:hidden; margin-bottom:12px;}
+  #jinTimerBar{height:100%; width:100%; background:var(--neon-pink);}
+  #jinBtn{
+    padding:12px 20px; font-size:15px; font-weight:800; border:none; border-radius:24px;
+    background:linear-gradient(180deg,#fff,#ffe1ea); color:#c21856;
+    box-shadow:0 5px 0 #7c0f36; cursor:pointer;
+  }
+  #jinBtn:active{transform:translateY(3px); box-shadow:0 2px 0 #7c0f36;}
+
+  #escapeOverlay{
+    position:absolute; inset:0; z-index:35; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .15s; flex-direction:column; gap:14px;
+  }
+  #escapeOverlay.show{opacity:1; pointer-events:auto;}
+  #escBtn{
+    padding:18px 30px; font-size:19px; font-weight:800; border:none; border-radius:32px;
+    background:linear-gradient(180deg,var(--neon-yellow),#ff9a2e); color:#2e1000;
+    box-shadow:0 6px 0 #8a4600; cursor:pointer;
+  }
+  #escBtn:active{transform:translateY(4px); box-shadow:0 2px 0 #8a4600;}
+  #escText{font-size:16px; font-weight:700; color:var(--neon-yellow); text-shadow:0 0 10px #ff8c00;}
+
+  #controls{
+    position:absolute; bottom:10px; left:0; right:0; display:flex; justify-content:space-between;
+    padding:0 14px; z-index:6; pointer-events:none;
+  }
+  .ctlBtn{
+    pointer-events:auto; width:58px; height:58px; border-radius:50%;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(2px);
+  }
+  .ctlBtn:active{background:rgba(255,255,255,.22);}
+
+  #endScreen{background:rgba(10,5,3,.96);}
+  #endTitle{font-size:30px; color:var(--neon-pink); text-shadow:0 0 12px var(--neon-pink);}
+  #endSub{font-size:14px; color:#e8d9bd; max-width:280px; line-height:1.7;}
+  #endScore{font-size:15px; color:var(--neon-yellow);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <div id="startScreen" class="screen">
+    <div id="titleGlow">종로 · 어느 술집 지하</div>
+    <h1>술벙개 탈출<br>대작전</h1>
+    <p class="desc">우연히 나간 술벙개, 근데 여긴 다 <b style="color:var(--neon-pink)">끼순이</b>다.<br>
+    술은 계속 돌고, 시선은 사방에서 날아온다.<br>
+    들키지 않고 <b style="color:var(--neon-yellow)">1분씩 버텨서</b> 무사히 탈출하라.</p>
+    <div class="rulebox">
+      <b>조작법</b>
+      ← → (또는 화면 하단 버튼) : 고개 돌리기 / 자리 이동<br>
+      버튼 이벤트가 뜨면 제한시간 안에 탭!<br><br>
+      <b>라운드가 지날수록 패턴이 쌓입니다</b><br>
+      1R 윙크 회피 · 2R 뽀뽀 회피 · 3R 진선미 방어 · 4R 최종 탈출
+    </div>
+    <button class="primary" id="startBtn">술자리 입장</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen" class="screen hidden">
+    <div id="hud">
+      <div id="hudTop">
+        <span id="roundLabel">ROUND 1</span>
+        <span id="livesRow"></span>
+        <span id="scoreLabel">SCORE 0</span>
+      </div>
+      <div id="timerBarWrap"><div id="timerBar"></div></div>
+    </div>
+
+    <div id="table">
+      <div class="enemyGroup" data-lane="0"><span class="enemy">💃</span><span class="enemy">👩‍🦰</span></div>
+      <div class="enemyGroup" data-lane="1"><span class="enemy">👸</span><span class="enemy">💁‍♀️</span></div>
+      <div class="enemyGroup" data-lane="2"><span class="enemy">👩‍🦱</span><span class="enemy">🙋‍♀️</span></div>
+    </div>
+
+    <div id="laneArea">
+      <div class="lane" data-lane="0"></div>
+      <div class="lane" data-lane="1"></div>
+      <div class="lane" data-lane="2"></div>
+      <div id="toast"><b id="toastTitle"></b><span id="toastBody"></span></div>
+      <div id="jinOverlay">
+        <div id="jinCard">
+          <p>😍 한 끼순이가 진선미의 <b style="color:var(--neon-pink)">'진'</b>으로<br>당신을 지목하려 합니다!</p>
+          <div id="jinTimerWrap"><div id="jinTimerBar"></div></div>
+          <button id="jinBtn">저 애인있어요!</button>
+        </div>
+      </div>
+      <div id="escapeOverlay">
+        <div id="escText">지금이야, 문 앞으로 튀어!</div>
+        <button id="escBtn">탈출하기</button>
+      </div>
+    </div>
+
+    <div id="playerTrack"><div id="player">🧑</div></div>
+
+    <div id="controls">
+      <div class="ctlBtn" id="btnLeft">◀</div>
+      <div class="ctlBtn" id="btnRight">▶</div>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="endScreen" class="screen hidden">
+    <div id="endTitle"></div>
+    <div id="endSub"></div>
+    <div id="endScore"></div>
+    <button class="primary" id="retryBtn">다시 도전</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const startScreen = document.getElementById('startScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const endScreen = document.getElementById('endScreen');
+  const startBtn = document.getElementById('startBtn');
+  const retryBtn = document.getElementById('retryBtn');
+
+  const roundLabel = document.getElementById('roundLabel');
+  const livesRow = document.getElementById('livesRow');
+  const scoreLabel = document.getElementById('scoreLabel');
+  const timerBar = document.getElementById('timerBar');
+  const laneEls = [...document.querySelectorAll('.lane')];
+  const laneArea = document.getElementById('laneArea');
+  const enemyGroups = [...document.querySelectorAll('.enemyGroup')];
+  const playerEl = document.getElementById('player');
+  const toast = document.getElementById('toast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastBody = document.getElementById('toastBody');
+  const jinOverlay = document.getElementById('jinOverlay');
+  const jinBtn = document.getElementById('jinBtn');
+  const jinTimerBar = document.getElementById('jinTimerBar');
+  const escapeOverlay = document.getElementById('escapeOverlay');
+  const escBtn = document.getElementById('escBtn');
+  const btnLeft = document.getElementById('btnLeft');
+  const btnRight = document.getElementById('btnRight');
+  const endTitle = document.getElementById('endTitle');
+  const endSub = document.getElementById('endSub');
+  const endScore = document.getElementById('endScore');
+
+  const LANE_PCT = [16.6, 50, 83.3];
+
+  const ROUND_CFG = {
+    1:{patterns:['wink'], spawnRange:[1500,2300], winkDur:1300, kissDur:900},
+    2:{patterns:['wink','kiss'], spawnRange:[1300,2000], winkDur:1200, kissDur:850},
+    3:{patterns:['wink','kiss','jin'], spawnRange:[1100,1800], winkDur:1100, kissDur:800, jinRange:[4200,6500], jinDur:1800},
+    4:{patterns:['wink','kiss','jin'], spawnRange:[900,1500], winkDur:1000, kissDur:750, jinRange:[3200,5500], jinDur:1600, escape:true}
+  };
+  const ROUND_DURATION = 60000;
+
+  let state;
+  function freshState(){
+    return {
+      round:1, lives:3, maxLives:5, score:0,
+      lane:1, running:false,
+      elapsed:0, nextSpawnAt:0, nextJinAt:0,
+      attacks:[], jin:null, escaping:false, tickId:null
+    };
+  }
+
+  function show(el){ [startScreen,gameScreen,endScreen].forEach(s=>s.classList.add('hidden')); el.classList.remove('hidden'); }
+
+  function updateHud(){
+    roundLabel.textContent = 'ROUND ' + state.round + ' / 4';
+    livesRow.textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(state.maxLives-state.lives);
+    scoreLabel.textContent = 'SCORE ' + state.score;
+  }
+  function setPlayerLane(l){
+    state.lane = l;
+    playerEl.style.left = LANE_PCT[l] + '%';
+    playerEl.style.transform = 'translateX(-50%)';
+  }
+  function movePlayer(dir){
+    if(!state.running || state.escaping) return;
+    const nl = Math.max(0, Math.min(2, state.lane+dir));
+    setPlayerLane(nl);
+  }
+
+  function showToast(title, body, ms){
+    toastTitle.textContent = title;
+    toastBody.textContent = body;
+    toast.classList.add('show');
+    if(ms) setTimeout(()=>toast.classList.remove('show'), ms);
+  }
+  function hideToast(){ toast.classList.remove('show'); }
+
+  function rand(min,max){ return min + Math.random()*(max-min); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function flashPlayer(){
+    playerEl.classList.remove('hitFlash'); void playerEl.offsetWidth;
+    playerEl.classList.add('hitFlash');
+  }
+  function flashEnemy(lane){
+    const g = enemyGroups[lane];
+    g.classList.add('active');
+    setTimeout(()=>g.classList.remove('active'), 300);
+  }
+
+  function loseLife(){
+    state.lives--;
+    updateHud();
+    flashPlayer();
+    if(state.lives<=0){
+      endGame(false);
+    }
+  }
+
+  function spawnAttack(type){
+    const cfg = ROUND_CFG[state.round];
+    const lane = Math.floor(Math.random()*3);
+    flashEnemy(lane);
+    const dur = type==='wink' ? cfg.winkDur : cfg.kissDur;
+    const el = document.createElement('div');
+    el.className = 'tele ' + (type==='wink'?'tele-wink':'tele-kiss');
+    el.textContent = type==='wink' ? '😉' : '💋';
+    el.style.animationDuration = dur+'ms';
+    laneEls[lane].appendChild(el);
+    state.attacks.push({type, lane, el, resolveAt: state.elapsed+dur});
+  }
+
+  function resolveAttack(a){
+    a.el.remove();
+    if(state.lane === a.lane){
+      loseLife();
+    } else {
+      state.score += 10;
+      updateHud();
+    }
+  }
+
+  function spawnJin(){
+    state.jin = {startAt: state.elapsed, dur: ROUND_CFG[state.round].jinDur};
+    jinOverlay.classList.add('show');
+    jinTimerBar.style.transition = 'none';
+    jinTimerBar.style.width = '100%';
+    requestAnimationFrame(()=>{
+      jinTimerBar.style.transition = `width ${state.jin.dur}ms linear`;
+      jinTimerBar.style.width = '0%';
+    });
+  }
+  function resolveJinFail(){
+    jinOverlay.classList.remove('show');
+    state.jin = null;
+    loseLife();
+  }
+  jinBtn.addEventListener('click', ()=>{
+    if(!state.jin) return;
+    jinOverlay.classList.remove('show');
+    state.jin = null;
+    state.score += 25;
+    updateHud();
+  });
+
+  function roundIntroText(round){
+    if(round===1) return ['ROUND 1 · 윙크 타이밍', '끼순이가 윙크를 날리면 그 방향에서 벗어나세요. ← → 로 자리를 옮겨 시선을 피하세요!'];
+    if(round===2) return ['ROUND 2 · 입술 세례 추가', '이번엔 💋가 진짜로 날아옵니다. 윙크보다 빠르니 방심 금지!'];
+    if(round===3) return ['ROUND 3 · 진선미 위기', '누군가 당신을 "진"으로 지목하려 합니다. 뜨면 재빨리 [저 애인있어요!] 를 눌러 방어하세요.'];
+    if(round===4) return ['ROUND 4 · 최종 탈출', '모든 패턴 총동원! 1분을 버티면 탈출 찬스가 옵니다. 마지막까지 방심하지 마세요.'];
+    return ['', ''];
+  }
+
+  function startRound(round){
+    state.round = round;
+    state.elapsed = 0;
+    state.attacks.forEach(a=>a.el.remove());
+    state.attacks = [];
+    if(state.jin){ jinOverlay.classList.remove('show'); state.jin = null; }
+    const cfg = ROUND_CFG[round];
+    state.nextSpawnAt = rand(...cfg.spawnRange);
+    state.nextJinAt = cfg.jinRange ? rand(...cfg.jinRange) : Infinity;
+    timerBar.style.width = '100%';
+    updateHud();
+    setPlayerLane(1);
+
+    const [title, body] = roundIntroText(round);
+    showToast(title, body);
+    state.running = false;
+    let cd = 3;
+    hideToast();
+    showToast(title, body);
+    setTimeout(()=>{
+      showToast(title, body + '  (곧 시작!)');
+      setTimeout(()=>{
+        hideToast();
+        state.running = true;
+      }, 1800);
+    }, 10);
+  }
+
+  function tick(){
+    if(!state.running) return;
+    state.elapsed += 100;
+    const cfg = ROUND_CFG[state.round];
+    timerBar.style.width = Math.max(0, 100 - (state.elapsed/ROUND_DURATION*100)) + '%';
+
+    if(state.elapsed >= state.nextSpawnAt && state.elapsed < ROUND_DURATION){
+      spawnAttack(pick(cfg.patterns.filter(p=>p!=='jin')));
+      state.nextSpawnAt = state.elapsed + rand(...cfg.spawnRange);
+    }
+    if(cfg.patterns.includes('jin') && !state.jin && state.elapsed >= state.nextJinAt && state.elapsed < ROUND_DURATION){
+      spawnJin();
+      state.nextJinAt = state.elapsed + rand(...cfg.jinRange);
+    }
+    if(state.jin && state.elapsed - state.jin.startAt >= state.jin.dur){
+      resolveJinFail();
+    }
+
+    for(const a of [...state.attacks]){
+      if(state.elapsed >= a.resolveAt){
+        state.attacks.splice(state.attacks.indexOf(a),1);
+        resolveAttack(a);
+      }
+    }
+
+    if(state.elapsed >= ROUND_DURATION && state.lives>0){
+      state.running = false;
+      onRoundClear();
+    }
+  }
+
+  function onRoundClear(){
+    state.attacks.forEach(a=>a.el.remove());
+    state.attacks = [];
+    if(state.round < 4){
+      state.lives = Math.min(state.maxLives, state.lives+1);
+      updateHud();
+      showToast('ROUND CLEAR!', '아무도 눈치채지 못했다... 다음 라운드로!', 2200);
+      setTimeout(()=> startRound(state.round+1), 2400);
+    } else {
+      triggerEscape();
+    }
+  }
+
+  function triggerEscape(){
+    state.escaping = true;
+    escapeOverlay.classList.add('show');
+    let handled = false;
+    const timeout = setTimeout(()=>{
+      if(handled) return;
+      handled = true;
+      escapeOverlay.classList.remove('show');
+      showToast('앗, 들켰다!', '다시 기회를 노려보자...', 1600);
+      loseLife();
+      if(state.lives>0){
+        setTimeout(()=>{ handled=false; triggerEscape(); }, 1800);
+      }
+    }, 2200);
+    escBtn.onclick = ()=>{
+      if(handled) return;
+      handled = true;
+      clearTimeout(timeout);
+      escapeOverlay.classList.remove('show');
+      endGame(true);
+    };
+  }
+
+  function endGame(won){
+    state.running = false;
+    state.attacks.forEach(a=>a.el.remove());
+    state.attacks = [];
+    jinOverlay.classList.remove('show');
+    escapeOverlay.classList.remove('show');
+    clearInterval(state.tickId);
+    if(won){
+      endTitle.textContent = '🎉 무사 탈출 성공!';
+      endTitle.style.color = 'var(--neon-yellow)';
+      endTitle.style.textShadow = '0 0 12px var(--neon-yellow)';
+      endSub.textContent = '아무에게도 들키지 않고 술벙개를 빠져나왔다. 진정한 생존왕.';
+    } else {
+      endTitle.textContent = '💔 결국 붙잡혔다...';
+      endTitle.style.color = 'var(--neon-pink)';
+      endTitle.style.textShadow = '0 0 12px var(--neon-pink)';
+      endSub.textContent = 'ROUND ' + state.round + '에서 발각되었습니다. 다음엔 더 빠르게!';
+    }
+    endScore.textContent = 'SCORE ' + state.score;
+    show(endScreen);
+  }
+
+  function startGame(){
+    state = freshState();
+    show(gameScreen);
+    state.tickId = setInterval(tick, 100);
+    startRound(1);
+  }
+
+  startBtn.addEventListener('click', startGame);
+  retryBtn.addEventListener('click', startGame);
+  btnLeft.addEventListener('click', ()=>movePlayer(-1));
+  btnRight.addEventListener('click', ()=>movePlayer(1));
+
+  window.addEventListener('keydown', (e)=>{
+    if(['ArrowLeft','a','A'].includes(e.key)) movePlayer(-1);
+    if(['ArrowRight','d','D'].includes(e.key)) movePlayer(1);
+  });
+
+  // prevent page scroll on touch drag inside game
+  app.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+})();
+</script>
+</body>
+</html>
